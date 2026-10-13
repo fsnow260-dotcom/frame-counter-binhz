@@ -7,26 +7,13 @@ on:
 
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        config:
-          - name: Windows
-            os: windows-latest
-
-    name: ${{ matrix.config.name }}
-    runs-on: ${{ matrix.config.os }}
+    runs-on: windows-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Geode SDK
-        uses: geode-sdk/setup-geode-sdk@main
-        with:
-          sdk: nightly
-
-      - name: Build Mod
-        uses: geode-sdk/build-geode-mod@main
+      - name: Build Geode Mod
+        uses: geode-sdk/build-geode-mod@v2
         with:
           combine: true
