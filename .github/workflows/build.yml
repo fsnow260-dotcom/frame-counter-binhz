@@ -13,14 +13,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build Geode Mod
-        uses: geode-sdk/build-geode-mod@main
-        with:
-          sdk: latest
-          target: Win64
-          combine: false
+      - name: Install Geode CLI via Scoop
+        shell: pwsh
+        run: |
+          scoop bucket add extras
+          scoop install geode-sdk-cli
 
-      - name: Upload artifact
+      - name: Verify Geode CLI
+        shell: pwsh
+        run: geode --version
+
+      - name: Install Geode SDK
+        shell: pwsh
+        run: geode sdk install latest
+
+      - name: Build Mod
+        shell: pwsh
+        run: geode build
+
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         if: success()
         with:
