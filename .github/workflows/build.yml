@@ -13,8 +13,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build Geode Mod
+      - name: Build Mod
         uses: geode-sdk/build-geode-mod@main
         with:
           sdk: nightly
           combine: true
+        env:
+          GEODE_SDK: ${{ github.workspace }}/geode
