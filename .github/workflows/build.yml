@@ -13,14 +13,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Geode SDK
-        uses: geode-sdk/setup-geode-sdk@main
-        with:
-          sdk: nightly
-
       - name: Build Geode Mod
         uses: geode-sdk/build-geode-mod@main
         with:
-          combine: true
-        env:
-          GEODE_SDK: ${{ env.GEODE_SDK }}
+          # Chỉ định build cho Windows
+          target: Win64
+          # Đặt là true nếu bạn muốn gộp nhiều platform sau này
+          combine: false
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NaNDLPrecision-Windows
+          # Lấy đường dẫn file .geode từ output của bước build
+          path: ${{ steps.build.outputs.build-output }}
