@@ -12,14 +12,10 @@ public:
 
 protected:
     bool setup() override;
-    void onToggle(CCObject* sender);
-    void onApply(CCObject*);
+    void onApply(CCObject* sender);
 
 private:
     double m_targetProb = 0.99;
-    bool m_nerveEnabled = true;
-    bool m_fatigueEnabled = true;
-    bool m_cpsEnabled = true;
     cocos2d::CCLabelBMFont* m_probValueLabel = nullptr;
 };
 

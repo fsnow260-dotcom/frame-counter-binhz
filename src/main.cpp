@@ -20,33 +20,24 @@ $on_mod(Loaded) {
         cfg.targetProb, cfg.nerveMultiplier,
         cfg.fatigueModifier, cfg.cpsDrain);
 
-    // ── Lắng nghe thay đổi setting ─────────────────────────
+    // ── Lắng nghe thay đổi slider ──────────────────────────
     listenForSettingChanges<double>("target-prob", [](double v) {
         nandl::SolverConfig::get().targetProb = v;
-        log::info("target-prob = {}", v);
     });
-
     listenForSettingChanges<double>("nerve-multiplier", [](double v) {
         nandl::SolverConfig::get().nerveMultiplier = v;
-        log::info("nerve-multiplier = {}", v);
     });
-
     listenForSettingChanges<double>("fatigue-multiplier", [](double v) {
         nandl::SolverConfig::get().fatigueModifier = v;
-        log::info("fatigue-multiplier = {}", v);
     });
-
     listenForSettingChanges<double>("cps-drain", [](double v) {
         nandl::SolverConfig::get().cpsDrain = v;
-        log::info("cps-drain = {}", v);
     });
 
     // ── Mở popup bằng bool toggle ──────────────────────────
-    // Cách này dùng API có từ Geode v4, chắc chắn compile.
     listenForSettingChanges<bool>("open-solver-popup", [](bool v) {
         if (!v) return;
 
-        // Mở popup
         if (auto popup = nandl::SolverPopup::create()) {
             popup->show();
         } else {

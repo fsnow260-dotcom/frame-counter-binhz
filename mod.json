@@ -3,10 +3,10 @@
   "gd": {
     "win": "2.2081"
   },
-  "id": "yourname.nandl-precision",
+  "id": "binz2.nandl-precision",
   "name": "NaNDL Precision Suite",
   "version": "v1.0.0",
-  "developer": "YourName",
+  "developer": "Binz2",
   "description": "Sub-frame CBF analytics with NaNDL sigma/s solver.",
   "settings": {
     "general-title": {
@@ -51,7 +51,7 @@
     },
     "open-solver-popup": {
       "name": "Open Solver Popup",
-      "description": "Bật để mở popup cấu hình solver, tự tắt sau khi mở",
+      "description": "Bat de mo popup cau hinh solver, tu tat sau khi mo",
       "type": "bool",
       "default": false
     }
