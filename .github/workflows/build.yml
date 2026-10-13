@@ -13,28 +13,52 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Scoop
+      - name: Download Geode CLI
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
-          Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
-          echo "$env:USERPROFILE\scoop\shims" >> $env:GITHUB_PATH
+          New-Item -ItemType Directory -Force -Path cli-tmp | Out-Null
+          gh release download --repo geode-sdk/cli --pattern "*.zip" --dir cli-tmp --clobber
+          Write-Host "=== Downloaded files ==="
+          Get-ChildItem cli-tmp | ForEach-Object { Write-Host $_.Name }
 
-      - name: Install Geode CLI
+      - name: Extract Geode CLI
         shell: pwsh
         run: |
-          scoop install geode-sdk-cli
+          $zip = Get-ChildItem cli-tmp -Filter "*.zip" | Select-Object -First 1
+          Write-Host "Extracting: $($zip.FullName)"
+          Expand-Archive $zip.FullName -DestinationPath cli-bin -Force
+          Write-Host "=== Extracted contents ==="
+          Get-ChildItem cli-bin -Recurse | ForEach-Object { Write-Host $_.FullName }
+          
+          # Tìm file .exe bất kỳ
+          $exe = Get-ChildItem cli-bin -Recurse -Filter "*.exe" | Select-Object -First 1
+          if (-not $exe) { throw "Không tìm thấy file .exe trong archive" }
+          Write-Host "=== Found executable: $($exe.FullName) ==="
+          
+          # Đảm bảo tên là geode.exe
+          if ($exe.Name -ne "geode.exe") {
+            $newPath = Join-Path $exe.DirectoryName "geode.exe"
+            Copy-Item $exe.FullName $newPath -Force
+            Write-Host "Renamed to: $newPath"
+          }
+          
+          echo $exe.DirectoryName >> $env:GITHUB_PATH
+
+      - name: Verify CLI
+        shell: pwsh
+        run: |
+          Get-Command geode -ErrorAction SilentlyContinue
           geode --version
 
       - name: Install Geode SDK
         shell: pwsh
-        run: |
-          geode sdk install latest
+        run: geode sdk install latest
 
       - name: Build Mod
         shell: pwsh
-        run: |
-          geode build
+        run: geode build
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
