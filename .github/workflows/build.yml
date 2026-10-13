@@ -16,5 +16,6 @@ jobs:
       - name: Build Geode Mod
         uses: geode-sdk/build-geode-mod@main
         with:
-          sdk: nightly
+          sdk: v3.7.1        # ← Đổi từ "nightly" sang version cụ thể
           combine: false
+          target: Win64
