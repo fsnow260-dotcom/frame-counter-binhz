@@ -1,59 +1,20 @@
 {
   "geode": "v4.0.0",
-  "gd": {
-    "win": "2.2081"
-  },
+  "gd": { "win": "2.2081" },
   "id": "binz2.nandl-precision",
   "name": "NaNDL Precision Suite",
   "version": "v1.0.0",
   "developer": "Binz2",
   "description": "Sub-frame CBF analytics with NaNDL sigma/s solver.",
   "settings": {
-    "general-title": {
-      "type": "title",
-      "name": "NaNDL Solver Configuration"
-    },
+    "general-title": { "type": "title", "name": "NaNDL Solver Configuration" },
     "target-prob": {
-      "name": "Target Probability",
-      "description": "Joint success probability for the solver",
-      "type": "float",
-      "default": 0.99,
-      "min": 0.5,
-      "max": 0.9999,
-      "control": { "slider": true }
-    },
-    "nerve-multiplier": {
-      "name": "Nerve Multiplier (K_T)",
-      "description": "Late-level pressure adjustment",
-      "type": "float",
-      "default": 1.15,
-      "min": 1.0,
-      "max": 2.0,
-      "control": { "slider": true }
-    },
-    "fatigue-multiplier": {
-      "name": "Fatigue Modifier (K_U)",
-      "description": "Input count stamina decay",
-      "type": "float",
-      "default": 1.05,
-      "min": 1.0,
-      "max": 1.5,
-      "control": { "slider": true }
-    },
-    "cps-drain": {
-      "name": "CPS Drain (K_C)",
-      "description": "Click frequency penalty",
-      "type": "float",
-      "default": 1.08,
-      "min": 1.0,
-      "max": 1.5,
+      "name": "Target Probability", "type": "float",
+      "default": 0.99, "min": 0.5, "max": 0.9999,
       "control": { "slider": true }
     },
     "open-solver-popup": {
-      "name": "Open Solver Popup",
-      "description": "Bat de mo popup cau hinh solver, tu tat sau khi mo",
-      "type": "bool",
-      "default": false
+      "name": "Open Solver Popup", "type": "bool", "default": false
     }
   }
 }
