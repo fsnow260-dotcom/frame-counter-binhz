@@ -13,23 +13,29 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Geode CLI via Scoop
+      - name: Install Geode CLI
         shell: pwsh
         run: |
-          scoop bucket add extras
-          scoop install geode-sdk-cli
+          irm https://raw.githubusercontent.com/geode-sdk/cli/main/install.ps1 | iex
+          $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
 
       - name: Verify Geode CLI
         shell: pwsh
-        run: geode --version
+        run: |
+          $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+          geode --version
 
       - name: Install Geode SDK
         shell: pwsh
-        run: geode sdk install latest
+        run: |
+          $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+          geode sdk install latest
 
       - name: Build Mod
         shell: pwsh
-        run: geode build
+        run: |
+          $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+          geode build
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4

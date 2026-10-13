@@ -8,6 +8,7 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 add_library(${Binhz} SHARED
     src/main.cpp
+    src/ui/SolverPopup.cpp
 )
 
 setup_geode_mod(${Binhz})
