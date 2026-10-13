@@ -13,28 +13,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install Scoop
+        shell: pwsh
+        run: |
+          Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+          Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
+          echo "$env:USERPROFILE\scoop\shims" >> $env:GITHUB_PATH
+
       - name: Install Geode CLI
         shell: pwsh
         run: |
-          irm https://raw.githubusercontent.com/geode-sdk/cli/main/install.ps1 | iex
-          $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-
-      - name: Verify Geode CLI
-        shell: pwsh
-        run: |
-          $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+          scoop install geode-sdk-cli
           geode --version
 
       - name: Install Geode SDK
         shell: pwsh
         run: |
-          $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
           geode sdk install latest
 
       - name: Build Mod
         shell: pwsh
         run: |
-          $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
           geode build
 
       - name: Upload Artifact
