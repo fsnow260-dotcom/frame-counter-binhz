@@ -16,4 +16,5 @@ jobs:
       - name: Build Geode Mod
         uses: geode-sdk/build-geode-mod@main
         with:
+          sdk: nightly
           combine: true
