@@ -13,13 +13,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download Geode CLI
+      - name: Download Geode CLI (Windows)
         shell: pwsh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           New-Item -ItemType Directory -Force -Path cli-tmp | Out-Null
-          gh release download --repo geode-sdk/cli --pattern "*.zip" --dir cli-tmp --clobber
+          gh release download --repo geode-sdk/cli --pattern "*windows*" --dir cli-tmp --clobber
           Write-Host "=== Downloaded files ==="
           Get-ChildItem cli-tmp | ForEach-Object { Write-Host $_.Name }
 
@@ -27,29 +27,28 @@ jobs:
         shell: pwsh
         run: |
           $zip = Get-ChildItem cli-tmp -Filter "*.zip" | Select-Object -First 1
-          Write-Host "Extracting: $($zip.FullName)"
+          if (-not $zip) { throw "Không tìm thấy file zip Windows" }
+          Write-Host "Extracting: $($zip.Name)"
           Expand-Archive $zip.FullName -DestinationPath cli-bin -Force
+
           Write-Host "=== Extracted contents ==="
           Get-ChildItem cli-bin -Recurse | ForEach-Object { Write-Host $_.FullName }
-          
-          # Tìm file .exe bất kỳ
+
           $exe = Get-ChildItem cli-bin -Recurse -Filter "*.exe" | Select-Object -First 1
           if (-not $exe) { throw "Không tìm thấy file .exe trong archive" }
-          Write-Host "=== Found executable: $($exe.FullName) ==="
-          
-          # Đảm bảo tên là geode.exe
+          Write-Host "Found: $($exe.FullName)"
+
           if ($exe.Name -ne "geode.exe") {
             $newPath = Join-Path $exe.DirectoryName "geode.exe"
             Copy-Item $exe.FullName $newPath -Force
-            Write-Host "Renamed to: $newPath"
           }
-          
-          echo $exe.DirectoryName >> $env:GITHUB_PATH
+          $exeDir = Split-Path $exe.FullName -Parent
+          echo $exeDir >> $env:GITHUB_PATH
 
       - name: Verify CLI
         shell: pwsh
         run: |
-          Get-Command geode -ErrorAction SilentlyContinue
+          Get-Command geode
           geode --version
 
       - name: Install Geode SDK
