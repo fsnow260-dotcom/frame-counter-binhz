@@ -13,8 +13,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup Geode SDK
+        uses: geode-sdk/setup-geode-sdk@main
+        with:
+          sdk: nightly
+
       - name: Build Geode Mod
         uses: geode-sdk/build-geode-mod@main
         with:
-          sdk: nightly
           combine: true
