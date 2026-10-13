@@ -16,6 +16,13 @@ jobs:
       - name: Build Geode Mod
         uses: geode-sdk/build-geode-mod@main
         with:
-          sdk: v3.7.1        # ← Đổi từ "nightly" sang version cụ thể
-          combine: false
+          sdk: latest
           target: Win64
+          combine: false
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: GeodeMod-Win64
+          path: build/*.geode
