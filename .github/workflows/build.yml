@@ -16,14 +16,5 @@ jobs:
       - name: Build Geode Mod
         uses: geode-sdk/build-geode-mod@main
         with:
-          # Chỉ định build cho Windows
-          target: Win64
-          # Đặt là true nếu bạn muốn gộp nhiều platform sau này
+          sdk: nightly
           combine: false
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: NaNDLPrecision-Windows
-          # Lấy đường dẫn file .geode từ output của bước build
-          path: ${{ steps.build.outputs.build-output }}
