@@ -1,11 +1,1 @@
-{
-  "geode": "v5.0.0",
-  "gd": {
-    "win": "2.2081"
-  },
-  "id": "binz2.nandl-precision",
-  "name": "NaNDL Precision Suite",
-  "version": "v1.0.0",
-  "developer": "Binz2",
-  "description": "Sub-frame CBF analytics with NaNDL sigma solver."
-}
+{"geode":"v5.0.0","gd":{"win":"2.2081"},"id":"binz2.nandl-precision","name":"NaNDL Precision Suite","version":"v1.0.0","developer":"Binz2","description":"NaNDL precision mod"}
