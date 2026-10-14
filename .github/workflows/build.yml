@@ -19,22 +19,6 @@ jobs:
           sdk: latest
           target: Win64
 
-      - name: Debug - Find Geode.cmake
-        if: failure()
-        shell: pwsh
-        run: |
-          Write-Host "=== Env vars ==="
-          Get-ChildItem env: | Where-Object { $_.Name -match "GEODE|CLI_PROFILE" } | ForEach-Object { Write-Host "$($_.Name)=$($_.Value)" }
-          
-          Write-Host "=== Search for Geode.cmake in workspace ==="
-          Get-ChildItem -Path . -Filter "Geode.cmake" -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_.FullName }
-          
-          Write-Host "=== Search in USERPROFILE ==="
-          Get-ChildItem -Path $env:USERPROFILE -Filter "Geode.cmake" -Recurse -Depth 5 -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_.FullName }
-          
-          Write-Host "=== Search in LOCALAPPDATA ==="
-          Get-ChildItem -Path $env:LOCALAPPDATA -Filter "Geode.cmake" -Recurse -Depth 5 -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_.FullName }
-
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         if: success()
