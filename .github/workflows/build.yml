@@ -28,13 +28,68 @@ jobs:
           }
           echo (Split-Path $exe.FullName -Parent) >> $env:GITHUB_PATH
 
-      - name: Install SDK v3.0.0
+      - name: Install SDK
         shell: pwsh
-        run: geode sdk install v3.0.0
+        run: geode sdk install latest
+
+      - name: Locate and patch GeodeFile.cmake
+        shell: pwsh
+        run: |
+          # Find SDK
+          $sdkPath = $env:GEODE_SDK
+          if (-not $sdkPath -or -not (Test-Path $sdkPath)) {
+            $found = Get-ChildItem -Path $PWD -Filter "GeodeFile.cmake" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($found) { $sdkPath = Split-Path (Split-Path $found.FullName -Parent) -Parent }
+          }
+          if (-not $sdkPath) { throw "Cannot locate SDK" }
+          Write-Host "SDK path: $sdkPath"
+          echo "SDK_PATH=$sdkPath" >> $env:GITHUB_ENV
+
+          $file = Join-Path $sdkPath "cmake\GeodeFile.cmake"
+          if (-not (Test-Path $file)) { throw "GeodeFile.cmake not found" }
+
+          Write-Host "=== BEFORE patch: line 88-100 ==="
+          $lines = Get-Content $file
+          for ($i = 87; $i -lt 100 -and $i -lt $lines.Count; $i++) {
+            Write-Host "LINE $($i+1): $($lines[$i])"
+          }
+
+          # Apply patch: insert "" before closing ) on string(REGEX REPLACE ...) that has too few args
+          $content = Get-Content $file -Raw
+          
+          # Match: string(REGEX REPLACE "A" "B" VAR)  with only 4 args after string
+          # Replace with: string(REGEX REPLACE "A" "B" VAR "")
+          $pattern = 'string\s*\(\s*REGEX\s+REPLACE\s+("(?:[^"\\]|\\.)*")\s+("(?:[^"\\]|\\.)*")\s+([A-Za-z_][A-Za-z0-9_]*)\s*\)'
+          $replacement = 'string(REGEX REPLACE $1 $2 $3 "")'
+          $newContent = [regex]::Replace($content, $pattern, $replacement)
+          
+          if ($newContent -eq $content) {
+            Write-Host "*** WARNING: no pattern matched. Trying alternative... ***"
+            # Alternative: match any REGEX REPLACE with few args
+            $pattern2 = 'string\s*\(\s*REGEX\s+REPLACE\b([^)]*)\)'
+            $newContent = [regex]::Replace($content, $pattern2, {
+              param($m)
+              $args = $m.Groups[1].Value.Trim()
+              # Count quotes to estimate arg count
+              $quoteCount = ([regex]::Matches($args, '"')).Count
+              Write-Host "Found REGEX REPLACE with $quoteCount quotes: $args"
+              "string(REGEX REPLACE $args)"
+            })
+          }
+          
+          [System.IO.File]::WriteAllText($file, $newContent, [System.Text.UTF8Encoding]::new($false))
+          Write-Host "=== File patched ==="
+          Write-Host "=== AFTER patch: line 88-100 ==="
+          $lines = Get-Content $file
+          for ($i = 87; $i -lt 100 -and $i -lt $lines.Count; $i++) {
+            Write-Host "LINE $($i+1): $($lines[$i])"
+          }
 
       - name: Build
         shell: pwsh
-        run: geode build
+        run: |
+          $env:GEODE_SDK = $env:SDK_PATH
+          geode build
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
