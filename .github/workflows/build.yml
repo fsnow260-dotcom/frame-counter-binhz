@@ -7,11 +7,15 @@ on:
 
 jobs:
   build:
-    runs-on: windows-2022          # ← ĐÂY là thay đổi duy nhất
+    runs-on: windows-2019          # ← đổi từ windows-2022
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Check CMake version
+        shell: pwsh
+        run: cmake --version
 
       - name: Build Geode Mod
         uses: geode-sdk/build-geode-mod@main
