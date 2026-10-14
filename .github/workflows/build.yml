@@ -13,10 +13,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Print CMakeLists for debug
-        shell: pwsh
-        run: Get-Content CMakeLists.txt
-
       - name: Build Geode Mod
         uses: geode-sdk/build-geode-mod@main
         with:
