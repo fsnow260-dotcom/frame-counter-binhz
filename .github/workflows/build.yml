@@ -13,52 +13,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download Geode CLI (Windows)
+      - name: Print CMakeLists for debug
         shell: pwsh
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          New-Item -ItemType Directory -Force -Path cli-tmp | Out-Null
-          gh release download --repo geode-sdk/cli --pattern "*-win.zip" --dir cli-tmp --clobber
+        run: Get-Content CMakeLists.txt
 
-          Write-Host "=== Downloaded files ==="
-          Get-ChildItem cli-tmp | ForEach-Object { Write-Host $_.Name }
-
-      - name: Extract Geode CLI
-        shell: pwsh
-        run: |
-          $zip = Get-ChildItem cli-tmp -Filter "*.zip" | Select-Object -First 1
-          if (-not $zip) { throw "Không tìm thấy file zip" }
-          Write-Host "Extracting: $($zip.Name)"
-          Expand-Archive $zip.FullName -DestinationPath cli-bin -Force
-
-          Write-Host "=== Extracted contents ==="
-          Get-ChildItem cli-bin -Recurse | ForEach-Object { Write-Host $_.FullName }
-
-          $exe = Get-ChildItem cli-bin -Recurse -Filter "*.exe" | Select-Object -First 1
-          if (-not $exe) { throw "Không tìm thấy .exe" }
-          Write-Host "Found: $($exe.FullName)"
-
-          if ($exe.Name -ne "geode.exe") {
-            $newPath = Join-Path $exe.DirectoryName "geode.exe"
-            Copy-Item $exe.FullName $newPath -Force
-          }
-          $exeDir = Split-Path $exe.FullName -Parent
-          echo $exeDir >> $env:GITHUB_PATH
-
-      - name: Verify CLI
-        shell: pwsh
-        run: |
-          Get-Command geode
-          geode --version
-
-      - name: Install Geode SDK
-        shell: pwsh
-        run: geode sdk install latest
-
-      - name: Build Mod
-        shell: pwsh
-        run: geode build
+      - name: Build Geode Mod
+        uses: geode-sdk/build-geode-mod@main
+        with:
+          sdk: latest
+          target: Win64
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
