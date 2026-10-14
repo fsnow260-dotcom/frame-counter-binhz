@@ -13,6 +13,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Debug - Print mod.json
+        shell: pwsh
+        run: |
+          Write-Host "=== mod.json exists? ==="
+          Test-Path mod.json
+          Write-Host "=== mod.json content ==="
+          Get-Content mod.json -Raw
+          Write-Host "=== End ==="
+
       - name: Build Geode Mod
         uses: geode-sdk/build-geode-mod@main
         with:

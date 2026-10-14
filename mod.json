@@ -1,20 +1,11 @@
 {
-  "geode": "v4.0.0",
-  "gd": { "win": "2.2081" },
+  "geode": "v5.0.0",
+  "gd": {
+    "win": "2.2081"
+  },
   "id": "binz2.nandl-precision",
   "name": "NaNDL Precision Suite",
   "version": "v1.0.0",
   "developer": "Binz2",
-  "description": "Sub-frame CBF analytics with NaNDL sigma/s solver.",
-  "settings": {
-    "general-title": { "type": "title", "name": "NaNDL Solver Configuration" },
-    "target-prob": {
-      "name": "Target Probability", "type": "float",
-      "default": 0.99, "min": 0.5, "max": 0.9999,
-      "control": { "slider": true }
-    },
-    "open-solver-popup": {
-      "name": "Open Solver Popup", "type": "bool", "default": false
-    }
-  }
+  "description": "Sub-frame CBF analytics with NaNDL sigma solver."
 }
