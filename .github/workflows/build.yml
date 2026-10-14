@@ -13,33 +13,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Diagnose and strip BOM from mod.json
-        shell: pwsh
-        run: |
-          $path = "$PWD\mod.json"
-          $bytes = [System.IO.File]::ReadAllBytes($path)
-
-          Write-Host "=== First 16 bytes (hex) ==="
-          $hex = ($bytes[0..15] | ForEach-Object { '{0:X2}' -f $_ }) -join ' '
-          Write-Host $hex
-          Write-Host "=== File size: $($bytes.Length) bytes ==="
-
-          if ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
-            Write-Host "*** BOM DETECTED — stripping ***"
-            $newBytes = $bytes[3..($bytes.Length - 1)]
-            [System.IO.File]::WriteAllBytes($path, $newBytes)
-            Write-Host "BOM stripped. New size: $($newBytes.Length) bytes"
-          } else {
-            Write-Host "*** No BOM detected ***"
-          }
-
-          Write-Host "=== mod.json after processing ==="
-          Get-Content $path -Raw
-
       - name: Build Geode Mod
         uses: geode-sdk/build-geode-mod@main
         with:
-          sdk: latest
+          sdk: v4.6.1
           target: Win64
 
       - name: Upload Artifact
