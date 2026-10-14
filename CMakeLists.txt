@@ -6,15 +6,14 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
-# ─── DEBUG: in ra mod.json thực tế CMake đọc ──────────────
+# ─── DEBUG ─────────────────────────────────────────────────
 message(STATUS "CMAKE_CURRENT_SOURCE_DIR = ${CMAKE_CURRENT_SOURCE_DIR}")
-message(STATUS "mod.json exists = ${EXISTS \"${CMAKE_CURRENT_SOURCE_DIR}/mod.json\"}")
 
-file(GLOB ALL_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*")
-message(STATUS "=== Files in repo root ===")
-foreach(f ${ALL_FILES})
-    message(STATUS "  ${f}")
-endforeach()
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/mod.json")
+    message(STATUS "mod.json EXISTS")
+else()
+    message(FATAL_ERROR "mod.json NOT FOUND in ${CMAKE_CURRENT_SOURCE_DIR}")
+endif()
 
 file(READ "${CMAKE_CURRENT_SOURCE_DIR}/mod.json" MODJSON_CONTENT)
 message(STATUS "=== mod.json content as CMake sees it ===")
