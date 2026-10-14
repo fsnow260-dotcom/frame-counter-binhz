@@ -13,83 +13,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download Geode CLI
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          New-Item -ItemType Directory -Force -Path cli-tmp | Out-Null
-          gh release download --repo geode-sdk/cli --pattern "*-win.zip" --dir cli-tmp --clobber
-          $zip = Get-ChildItem cli-tmp -Filter "*.zip" | Select-Object -First 1
-          Expand-Archive $zip.FullName -DestinationPath cli-bin -Force
-          $exe = Get-ChildItem cli-bin -Recurse -Filter "*.exe" | Select-Object -First 1
-          if ($exe.Name -ne "geode.exe") {
-            Copy-Item $exe.FullName (Join-Path $exe.DirectoryName "geode.exe") -Force
-          }
-          echo (Split-Path $exe.FullName -Parent) >> $env:GITHUB_PATH
-
-      - name: Install SDK
-        shell: pwsh
-        run: geode sdk install latest
-
-      - name: Locate and patch GeodeFile.cmake
+      - name: Install CMake 3.30
         shell: pwsh
         run: |
-          # Find SDK
-          $sdkPath = $env:GEODE_SDK
-          if (-not $sdkPath -or -not (Test-Path $sdkPath)) {
-            $found = Get-ChildItem -Path $PWD -Filter "GeodeFile.cmake" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-            if ($found) { $sdkPath = Split-Path (Split-Path $found.FullName -Parent) -Parent }
-          }
-          if (-not $sdkPath) { throw "Cannot locate SDK" }
-          Write-Host "SDK path: $sdkPath"
-          echo "SDK_PATH=$sdkPath" >> $env:GITHUB_ENV
+          $url = "https://github.com/Kitware/CMake/releases/download/v3.30.5/cmake-3.30.5-windows-x86_64.zip"
+          Invoke-WebRequest -Uri $url -OutFile cmake.zip
+          Expand-Archive cmake.zip -DestinationPath cmake-dir -Force
+          $cmakeBin = (Get-ChildItem cmake-dir -Directory | Select-Object -First 1).FullName + "\bin"
+          Write-Host "CMake bin: $cmakeBin"
+          echo $cmakeBin >> $env:GITHUB_PATH
+          & "$cmakeBin\cmake.exe" --version
 
-          $file = Join-Path $sdkPath "cmake\GeodeFile.cmake"
-          if (-not (Test-Path $file)) { throw "GeodeFile.cmake not found" }
-
-          Write-Host "=== BEFORE patch: line 88-100 ==="
-          $lines = Get-Content $file
-          for ($i = 87; $i -lt 100 -and $i -lt $lines.Count; $i++) {
-            Write-Host "LINE $($i+1): $($lines[$i])"
-          }
-
-          # Apply patch: insert "" before closing ) on string(REGEX REPLACE ...) that has too few args
-          $content = Get-Content $file -Raw
-          
-          # Match: string(REGEX REPLACE "A" "B" VAR)  with only 4 args after string
-          # Replace with: string(REGEX REPLACE "A" "B" VAR "")
-          $pattern = 'string\s*\(\s*REGEX\s+REPLACE\s+("(?:[^"\\]|\\.)*")\s+("(?:[^"\\]|\\.)*")\s+([A-Za-z_][A-Za-z0-9_]*)\s*\)'
-          $replacement = 'string(REGEX REPLACE $1 $2 $3 "")'
-          $newContent = [regex]::Replace($content, $pattern, $replacement)
-          
-          if ($newContent -eq $content) {
-            Write-Host "*** WARNING: no pattern matched. Trying alternative... ***"
-            # Alternative: match any REGEX REPLACE with few args
-            $pattern2 = 'string\s*\(\s*REGEX\s+REPLACE\b([^)]*)\)'
-            $newContent = [regex]::Replace($content, $pattern2, {
-              param($m)
-              $args = $m.Groups[1].Value.Trim()
-              # Count quotes to estimate arg count
-              $quoteCount = ([regex]::Matches($args, '"')).Count
-              Write-Host "Found REGEX REPLACE with $quoteCount quotes: $args"
-              "string(REGEX REPLACE $args)"
-            })
-          }
-          
-          [System.IO.File]::WriteAllText($file, $newContent, [System.Text.UTF8Encoding]::new($false))
-          Write-Host "=== File patched ==="
-          Write-Host "=== AFTER patch: line 88-100 ==="
-          $lines = Get-Content $file
-          for ($i = 87; $i -lt 100 -and $i -lt $lines.Count; $i++) {
-            Write-Host "LINE $($i+1): $($lines[$i])"
-          }
-
-      - name: Build
+      - name: Verify CMake in PATH
         shell: pwsh
-        run: |
-          $env:GEODE_SDK = $env:SDK_PATH
-          geode build
+        run: cmake --version
+
+      - name: Build Geode Mod
+        uses: geode-sdk/build-geode-mod@main
+        with:
+          sdk: v5.0.0
+          target: Win64
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
