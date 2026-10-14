@@ -13,21 +13,37 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download Geode CLI (Windows)
+      - name: Download Geode CLI
         shell: pwsh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           New-Item -ItemType Directory -Force -Path cli-tmp | Out-Null
-          gh release download --repo geode-sdk/cli --pattern "*windows*" --dir cli-tmp --clobber
+
+          Write-Host "=== Available assets in geode-sdk/cli release ==="
+          gh release view --repo geode-sdk/cli --json assets --jq '.assets[].name' | ForEach-Object { Write-Host $_ }
+          Write-Host "=== End of asset list ==="
+
+          Write-Host "Downloading all assets..."
+          gh release download --repo geode-sdk/cli --dir cli-tmp --clobber
+
           Write-Host "=== Downloaded files ==="
           Get-ChildItem cli-tmp | ForEach-Object { Write-Host $_.Name }
 
       - name: Extract Geode CLI
         shell: pwsh
         run: |
-          $zip = Get-ChildItem cli-tmp -Filter "*.zip" | Select-Object -First 1
-          if (-not $zip) { throw "Không tìm thấy file zip Windows" }
+          # Tìm file zip có tên chứa "win" (không phân biệt hoa thường)
+          $zip = Get-ChildItem cli-tmp -Filter "*.zip" |
+                 Where-Object { $_.Name -match "(?i)win" } |
+                 Select-Object -First 1
+
+          if (-not $zip) {
+            Write-Host "Không match 'win', thử tìm bất kỳ file .zip nào..."
+            $zip = Get-ChildItem cli-tmp -Filter "*.zip" | Select-Object -First 1
+          }
+          if (-not $zip) { throw "Không có file .zip nào trong cli-tmp" }
+
           Write-Host "Extracting: $($zip.Name)"
           Expand-Archive $zip.FullName -DestinationPath cli-bin -Force
 
@@ -35,12 +51,13 @@ jobs:
           Get-ChildItem cli-bin -Recurse | ForEach-Object { Write-Host $_.FullName }
 
           $exe = Get-ChildItem cli-bin -Recurse -Filter "*.exe" | Select-Object -First 1
-          if (-not $exe) { throw "Không tìm thấy file .exe trong archive" }
-          Write-Host "Found: $($exe.FullName)"
+          if (-not $exe) { throw "Không tìm thấy file .exe" }
+          Write-Host "Found executable: $($exe.FullName)"
 
           if ($exe.Name -ne "geode.exe") {
             $newPath = Join-Path $exe.DirectoryName "geode.exe"
             Copy-Item $exe.FullName $newPath -Force
+            Write-Host "Renamed to: $newPath"
           }
           $exeDir = Split-Path $exe.FullName -Parent
           echo $exeDir >> $env:GITHUB_PATH
